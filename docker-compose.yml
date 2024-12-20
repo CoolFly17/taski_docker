@@ -1,0 +1,46 @@
+
+
+services:
+  db:
+    image: postgres:13.10
+    container_name: taski_db
+    environment:
+      POSTGRES_USER: django_user
+      POSTGRES_PASSWORD: mysecretpassword
+      POSTGRES_DB: django
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    ports:
+      - "5431:5431"
+
+  backend:
+    build: ./backend
+    container_name: taski_backend_container
+    environment:
+      POSTGRES_USER: django_user
+      POSTGRES_PASSWORD: mysecretpassword
+      POSTGRES_DB: django
+      DB_HOST: db
+      DB_PORT: 5432
+    ports:
+      - "8000:8000"
+    volumes:
+      - static_volume:/backend_static
+    depends_on:
+      - db
+
+  frontend:
+    build: ./frontend
+    container_name: taski_frontend_container
+    ports:
+      - "8001:8000"
+    volumes:
+      - static_volume:/frontend_static
+    command: cp -r /app/build/. /frontend_static/
+    depends_on:
+      - backend
+
+volumes:
+  pg_data:
+  static_volume:
+
